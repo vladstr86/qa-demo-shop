@@ -1,4 +1,4 @@
-import { euroCents } from '../test-data/shop.js';
+import { euroCents } from '../test-data/shop-data.js';
 
 export class Cart {
   constructor(page) {

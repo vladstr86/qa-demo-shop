@@ -1,12 +1,7 @@
-export const customer = Object.freeze({
-  name: 'Vlad Strut',
-  email: 'strutv@gmail.com',
-  address: 'Damrak, 70, Amsterdam, NL',
-  billing: '221B Baker St, London, UK',
-});
+import { loadFixtureData } from './fixture-loader.js';
 
-export const account = Object.freeze({ email: 'demo@atelier.test', password: 'Demo123!' });
-export const card = Object.freeze({ number: '4111 1111 1111 1111', expiry: '12/39', cvv: '369' });
+const fixtureData = await loadFixtureData();
+export const { customer, account, card } = fixtureData;
 
 export const variants = Object.freeze({
   atlas: Object.freeze({ color: 'black', ram: '16', ssd: '512' }),

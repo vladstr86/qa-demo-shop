@@ -1,9 +1,8 @@
 import { test, expect } from '../../fixtures/shop.js';
 import { AccountPage } from '../../pages/AccountPage.js';
 import { ShopPage } from '../../pages/ShopPage.js';
-import { account } from '../../test-data/shop.js';
 
-test('tab sessions and remember me persist correctly across reload and a new browser context', async ({ page, browser, baseURL, shop, accountPage }) => {
+test('tab sessions and remember me persist correctly across reload and a new browser context', async ({ page, browser, baseURL, shop, accountPage, account }) => {
   for (const remember of [false, true]) {
     await test.step(`remember me = ${remember}: verify storage lifetime and logout`, async () => {
       await accountPage.login(account.email, account.password, remember);

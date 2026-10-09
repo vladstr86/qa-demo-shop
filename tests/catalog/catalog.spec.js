@@ -1,6 +1,6 @@
 import { test, expect } from '../../fixtures/shop.js';
 import { imageDecoded } from '../../pages/image.js';
-import { euroCents, pricesCents } from '../../test-data/shop.js';
+import { euroCents, pricesCents } from '../../test-data/shop-data.js';
 
 test('catalog combines filters, shows bilingual EUR prices and loads every product asset', async ({ shop, product }) => {
   const catalogPrices = [pricesCents.atlas, pricesCents.horizon, pricesCents.pulseWired, pricesCents.wave, pricesCents.keyboard, pricesCents.mouse];

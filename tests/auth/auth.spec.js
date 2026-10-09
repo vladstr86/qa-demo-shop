@@ -1,7 +1,6 @@
 import { test, expect } from '../../fixtures/shop.js';
-import { account } from '../../test-data/shop.js';
 
-test('mock login rejects invalid credentials in RO/EN, then supports login and logout', async ({ shop, accountPage }) => {
+test('mock login rejects invalid credentials in RO/EN, then supports login and logout', async ({ shop, accountPage, account }) => {
   for (const language of ['ro', 'en']) {
     await test.step(`${language}: reject a copied invalid password`, async () => {
       await shop.language(language);

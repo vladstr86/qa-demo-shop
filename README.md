@@ -44,22 +44,27 @@ The suite uses JavaScript ESM and Page Object Model. CSS locators and DOM intera
 
 Eight shared cases cover catalog/filter combinations, variants/gallery/images, cart mathematics, mock login, guest checkout, negative products, negative checkout, and bilingual/responsive behavior. Two desktop-only cases cover authenticated checkout and session/remember-me persistence. The mobile project excludes `*.desktop.spec.js` from discovery, giving 10 desktop + 8 mobile = 18 instances, with RO/EN inside cases. Viewports are 1440×900 and 390×844; mobile enables `isMobile` and `hasTouch`.
 
-Fixed positive customer: Vlad Strut, `strutv@gmail.com`; shipping `Damrak, 70, Amsterdam, NL`; billing `221B Baker St, London, UK`. Dummy card: `4111 1111 1111 1111`, `12/39`, CVV `369`. Mock account: `demo@atelier.test` / `Demo123!`. Negative cases clone the valid data, invalidate one field, and restore it.
+Fresh checkouts and GitHub Actions use fixed fictional customer/payment defaults from `test-data/shop.example.json`. When no login override is supplied, the account POM reads the demo account advertised by the selected website. Negative cases copy valid fixture data, invalidate one field, and restore it without modifying the shared fixture.
 
-All prices are fixed EUR with exactly two decimals: RO `139,95 €`, EN `€139.95`. Calculations use integer cents. Standard shipping costs 300 cents; express costs 650 cents. The required cart exercise independently checks `79900 × 2 + 13995 × 3 = 201785` cents from displayed unit prices and quantities.
+For private local data, copy the fictional template and edit the ignored copy:
 
-| Product or variant | Cents |
-| --- | ---: |
-| Atlas 14, 16 GB / 512 GB | 79900 |
-| Atlas 14, 32 GB / 1 TB | 95950 |
-| Horizon 16, 16 GB | 109950 |
-| Horizon 16, 32 GB | 121975 |
-| Pulse Pro wireless / wired | 13995 / 11995 |
-| Wave Mini | 4990 |
-| Studio Keyboard | 6900 |
-| Mouse Precision | 3999 |
+```bash
+cp test-data/shop.example.json test-data/shop.local.json
+```
 
-Catalog Pulse “From” pricing is 11995 cents; wireless selection costs 13995 cents. Image coverage checks all 45 PNG files, browser decoding, gallery thumbnails/zoom/navigation, radio-color exclusivity, and catalog `object-fit: cover`.
+The loader in `test-data/shop-data.js` uses the JSON override first, then the ignored legacy `test-data/shop.js` if present, then fictional defaults. Local files can override complete groups or individual fields. `CI=true` skips both private files; set `QA_USE_LOCAL_TEST_DATA=0` to exercise the same fallback locally. Environment overrides take precedence: `QA_CUSTOMER_NAME`, `QA_CUSTOMER_EMAIL`, `QA_CUSTOMER_ADDRESS`, `QA_CUSTOMER_BILLING`, `QA_CARD_NUMBER`, `QA_CARD_EXPIRY`, `QA_CARD_CVV`, and the pair `QA_LOGIN_EMAIL` / `QA_LOGIN_PASSWORD`. Environment files are not loaded automatically; export variables in your shell. Keep actual values out of documentation, commits, and shared test reports.
+
+For the local website, `dist/demo.example.json` supplies a fictional demo account; an optional ignored `dist/demo.local.json` overrides it. These are simulated credentials displayed by the demo UI. No ignored file is needed to run the site or tests after a fresh clone.
+
+The separation and actual browser results are recorded in [qa/private-data-review.md](qa/private-data-review.md). To run the public site with fictional defaults even when private files exist locally:
+
+```bash
+QA_USE_LOCAL_TEST_DATA=0 PLAYWRIGHT_HTML_OPEN=never npm test -- --project=chromium-desktop --project=chromium-mobile --workers=2
+```
+
+Prices use EUR with exactly two decimal places and locale-specific formatting. Calculations use integer cents. Cart and checkout tests independently recalculate expected amounts from displayed unit prices and quantities.
+
+Image coverage checks local PNG files, browser decoding, gallery thumbnails/zoom/navigation, radio-color exclusivity, and catalog `object-fit: cover`.
 
 Syntax and discovery checks do not execute browser interactions. Actual verification and the thorough review are recorded in [qa/QA-001-r1-review.md](qa/QA-001-r1-review.md).
 
@@ -67,7 +72,7 @@ Syntax and discovery checks do not execute browser interactions. Actual verifica
 
 [AGENTS.md](AGENTS.md) contains permanent project rules. [qa/WORKFLOW.md](qa/WORKFLOW.md) describes the coordinator and approval process. Run `npm run qa:review` before applying an approved prompt. Its ID/revision and source/prompt fingerprints must match the exact user approval.
 
-QA-001 r1 was approved for manual application in this conversation. Its original prompt stays unchanged to preserve its fingerprint. The manifest's prepared `pending` status belongs to the optional CLI handoff, not to a claim about manual implementation. No prompt has been dispatched to another Codex process or to VS Code.
+QA-001 r1 was approved for manual application in this conversation. Its original prompt is preserved unchanged in an ignored local file because it contains private test values; it is no longer part of the public checkout. New privacy-safe coordinator prompts remain tracked. The manifest's prepared `pending` status belongs to the optional CLI handoff, not to a claim about manual implementation. No prompt has been dispatched to another Codex process or to VS Code.
 
 The optional `npm run qa:apply` requires interactive exact-token approval and an installed, authenticated Codex CLI. It does not start a watcher or install the CLI. Test the handoff helper separately with `node --test scripts/qa-handoff.test.mjs`.
 

@@ -1,5 +1,5 @@
 import { test, expect } from '../../fixtures/shop.js';
-import { card, customer, euroCents, pricesCents, shippingCents, variants } from '../../test-data/shop.js';
+import { card, customer, euroCents, pricesCents, shippingCents, variants } from '../../test-data/shop-data.js';
 
 test('RO/EN preserves variants, quantities and all checkout data without responsive overflow', async ({ shop, product, checkout }) => {
   await expect(shop.html).toHaveAttribute('lang', 'ro');
