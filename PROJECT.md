@@ -15,7 +15,7 @@ A static bilingual Romanian/English shop for practicing manual QA and Playwright
 - Preserved values, variants, quantities, and checkout data when switching RO/EN.
 - Desktop/mobile layouts without horizontal overflow.
 
-There is no backend, real authentication, or payment integration. The mock account is `demo@atelier.test` / `Demo123!`. Positive customer and dummy-card values are centralized in `test-data/shop.js`.
+There is no backend, real authentication, or payment integration. The mock account is advertised by the demo website. Fictional positive customer and dummy-card defaults are centralized in `test-data/shop.example.json`; `test-data/shop-data.js` loads optional ignored local data or environment overrides. The website loads its own fictional mock account from `dist/demo.example.json`, with an optional ignored `dist/demo.local.json` override.
 
 ## Automated acceptance coverage
 

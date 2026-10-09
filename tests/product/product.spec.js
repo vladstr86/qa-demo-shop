@@ -1,5 +1,5 @@
 import { test, expect } from '../../fixtures/shop.js';
-import { euroCents, pricesCents, variants } from '../../test-data/shop.js';
+import { euroCents, pricesCents, variants } from '../../test-data/shop-data.js';
 
 test('product variants show fixed bilingual prices and every gallery image decodes', async ({ shop, product }) => {
   test.setTimeout(90_000);

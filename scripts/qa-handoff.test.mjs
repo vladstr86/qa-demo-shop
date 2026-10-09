@@ -103,6 +103,20 @@ test('zip changes ignored; symlinks rejected', async t => {
   await assert.rejects(siteFingerprint(root), /Symlinks/);
 });
 
+test('private demo configuration does not change the public fingerprint', async t => {
+  const root = await fixture(t);
+  const hash = await siteFingerprint(root);
+  const local = path.join(root, 'dist/demo.local.json');
+  await fs.writeFile(local, JSON.stringify({ email: 'local@example.test', password: 'LocalExampleOnly' }));
+  assert.equal(await siteFingerprint(root), hash);
+  await fs.writeFile(local, JSON.stringify({ email: 'other@example.test', password: 'OtherExampleOnly' }));
+  assert.equal(await siteFingerprint(root), hash);
+  await fs.rm(local);
+  assert.equal(await siteFingerprint(root), hash);
+  await fs.writeFile(path.join(root, 'dist/demo.example.json'), JSON.stringify({ email: 'demo@example.test', password: 'ExampleOnly' }));
+  assert.notEqual(await siteFingerprint(root), hash);
+});
+
 test('same ID revision cannot rebind prompt or site, even after another latest', async t => {
   const root = await fixture(t);
   await prepare(root, { promptPath: 'qa/prompt.md', id: 'QA-002', revision: 1 });

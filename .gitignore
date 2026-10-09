@@ -10,6 +10,12 @@ blob-report/
 .envrc
 .direnv/
 
+# Private fixtures and the original approval record containing personal data.
+/test-data/shop.js
+/test-data/shop.local.json
+/dist/demo.local.json
+/qa/prompts/QA-001-EUR.md
+
 # Browser authentication state and local cloud credentials.
 .auth/
 playwright/.auth/

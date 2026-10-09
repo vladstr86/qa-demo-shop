@@ -1,0 +1,17 @@
+{
+  "customer": {
+    "name": "Example Customer",
+    "email": "customer@example.test",
+    "address": "10 Example Street, Example City",
+    "billing": "20 Sample Avenue, Sample City"
+  },
+  "account": {
+    "email": "",
+    "password": ""
+  },
+  "card": {
+    "number": "4242 4242 4242 4242",
+    "expiry": "12/40",
+    "cvv": "123"
+  }
+}

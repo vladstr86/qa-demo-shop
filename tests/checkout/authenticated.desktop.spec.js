@@ -1,7 +1,7 @@
 import { test, expect } from '../../fixtures/shop.js';
-import { account, customer, pricesCents, shippingCents, money, euroCents } from '../../test-data/shop.js';
+import { customer, pricesCents, shippingCents, money, euroCents } from '../../test-data/shop-data.js';
 
-test('authenticated cash checkout prefills the account email and then uses the fixed customer', async ({ shop, product, checkout, accountPage }) => {
+test('authenticated cash checkout prefills the account email and then uses the fixed customer', async ({ shop, product, checkout, accountPage, account }) => {
   let subtotal;
   await test.step('Verify account prefill before entering the permanent customer data', async () => {
     await accountPage.login(account.email, account.password);

@@ -1,5 +1,5 @@
 import { test, expect } from '../../fixtures/shop.js';
-import { variants, pricesCents, shippingCents, money, euroCents } from '../../test-data/shop.js';
+import { variants, pricesCents, shippingCents, money, euroCents } from '../../test-data/shop-data.js';
 
 async function expectCart(cart, language, expectedLines, expectedSubtotal) {
   const lines = await cart.readLines(language);

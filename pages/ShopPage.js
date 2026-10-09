@@ -20,8 +20,9 @@ export class ShopPage {
   get searchInput() { return this.catalog.locator('[data-testid="search-input"]'); }
   get categoryInput() { return this.catalog.locator('[data-testid="category-filter"]'); }
 
-  async goto(url = '/') { await this.page.goto(url); }
-  async reload() { await this.page.reload(); }
+  async ready() { await this.card(1).waitFor({ state: 'visible' }); }
+  async goto(url = '/') { await this.page.goto(url); await this.ready(); }
+  async reload() { await this.page.reload(); await this.ready(); }
   async clearStorage() { await this.page.evaluate(() => { localStorage.clear(); sessionStorage.clear(); }); }
   async ensureVisible(locator) { await locator.scrollIntoViewIfNeeded(); }
   async search(query) { await this.searchInput.fill(query); }

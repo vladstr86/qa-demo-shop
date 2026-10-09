@@ -1,4 +1,4 @@
-import { card as dummyCard, customer } from '../test-data/shop.js';
+import { card as dummyCard, customer } from '../test-data/shop-data.js';
 
 export class CheckoutPage {
   constructor(page) {

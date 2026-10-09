@@ -3,6 +3,7 @@ import { ShopPage } from '../pages/ShopPage.js';
 import { ProductPage } from '../pages/ProductPage.js';
 import { AccountPage } from '../pages/AccountPage.js';
 import { CheckoutPage } from '../pages/CheckoutPage.js';
+import { account as configuredAccount } from '../test-data/shop-data.js';
 export const test = base.extend({
   shop: async ({ page }, use) => {
     const shop = new ShopPage(page);
@@ -14,6 +15,10 @@ export const test = base.extend({
   },
   product: async ({ page, shop }, use) => { await use(new ProductPage(page)); },
   accountPage: async ({ page, shop }, use) => { await use(new AccountPage(page)); },
+  account: async ({ accountPage }, use) => {
+    await use(configuredAccount.email && configuredAccount.password
+      ? configuredAccount : await accountPage.demoAccount());
+  },
   checkout: async ({ page, shop }, use) => { await use(new CheckoutPage(page)); },
 });
 export { expect };
