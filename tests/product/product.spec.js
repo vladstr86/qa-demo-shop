@@ -21,6 +21,7 @@ test('product variants show fixed bilingual prices and every gallery image decod
     for (const configuration of configurations) {
       await shop.product(configuration.id);
       await product.select(configuration.attributes);
+      await expect(product.galleryImage).toHaveAttribute('src', `assets/products/${configuration.id}-1.jpg`);
       for (const language of ['ro', 'en']) {
         await shop.language(language);
         const rendered = await product.price.innerText();
@@ -36,44 +37,74 @@ test('product variants show fixed bilingual prices and every gallery image decod
   });
 
   for (let id = 1; id <= 6; id++) {
-    await test.step(`product ${id}: main images, thumbnails, zoom and gallery wrapping`, async () => {
+    await test.step(`product ${id}: three distinct photos, thumbnails, zoom and gallery wrapping`, async () => {
       await shop.product(id);
-      const colors = id <= 3 ? ['red', 'purple', 'black'] : [null];
-      for (const color of colors) {
-        await product.thumbnail(1);
-        if (color) {
+      const thumbnailSources = [];
+      for (let view = 1; view <= 3; view++) {
+        const thumbnail = product.thumbImage(view);
+        await expect(thumbnail).toBeVisible();
+        await expect(thumbnail).toHaveAttribute('src', `assets/products/${id}-${view}.jpg`);
+        await expect(product.thumbButton(view)).toHaveAccessibleName(`Fotografia ${view}`);
+        await expect.poll(() => product.imageDecoded(thumbnail), { message: `Product ${id} thumbnail ${view} decodes` }).toBe(true);
+        thumbnailSources.push(await thumbnail.getAttribute('src'));
+      }
+      expect(new Set(thumbnailSources).size, `Product ${id} has three distinct local photographs`).toBe(3);
+
+      for (let view = 1; view <= 3; view++) {
+        await product.thumbnail(view);
+        const source = `assets/products/${id}-${view}.jpg`;
+        await expect(product.thumbButton(view)).toHaveAttribute('aria-pressed', 'true');
+        await expect(product.galleryImage).toBeVisible();
+        await expect(product.galleryImage).toHaveAttribute('src', source);
+        await expect.poll(() => product.imageDecoded(product.galleryImage), { message: `Product ${id} view ${view} decodes` }).toBe(true);
+        await expect(product.galleryImage).toHaveCSS('object-fit', 'contain');
+        const { image, frame } = await product.imageFrameBounds(product.galleryImage);
+        expect(image.width).toBeGreaterThan(0);
+        expect(image.height).toBeGreaterThan(0);
+        expect(image.width).toBeLessThanOrEqual(frame.width + 1);
+        expect(image.height).toBeLessThanOrEqual(frame.height + 1);
+        for (const language of ['ro', 'en']) {
+          await shop.language(language);
+          const productName = await product.title.innerText();
+          await expect(product.galleryImage).toHaveAttribute('alt', `${productName} · ${language === 'ro' ? 'fotografie ilustrativă' : 'illustrative photo'} ${view}`);
+          await expect(product.zoomButton).toHaveAccessibleName(language === 'ro' ? 'Mărește imaginea' : 'Zoom image');
+          await expect(product.previousButton).toHaveAccessibleName(language === 'ro' ? 'Imaginea precedentă' : 'Previous image');
+          await expect(product.nextButton).toHaveAccessibleName(language === 'ro' ? 'Imaginea următoare' : 'Next image');
+          await expect(product.thumbButton(view)).toHaveAccessibleName(`${language === 'ro' ? 'Fotografia' : 'Photo'} ${view}`);
+        }
+        await product.openZoom();
+        await expect(product.zoomDialog).toBeVisible();
+        await expect(product.zoomImage).toBeVisible();
+        await expect(product.zoomImage).toHaveAttribute('src', source);
+        await expect.poll(() => product.imageDecoded(product.zoomImage), { message: `Product ${id} zoom ${view} decodes` }).toBe(true);
+        await product.closeZoom();
+        await expect(product.zoomDialog).not.toBeVisible();
+        await shop.language('ro');
+      }
+
+      if (id <= 3) {
+        for (const color of ['red', 'purple', 'black']) {
           await product.select({ color });
           await expect(product.swatch(color)).toBeChecked();
-          for (const other of colors.filter(value => value !== color)) await expect(product.swatch(other)).not.toBeChecked();
-        }
-        const suffix = color ? `-${color}` : '';
-        for (let thumb = 1; thumb <= 3; thumb++) {
-          const thumbnail = product.thumbImage(thumb);
-          await expect(thumbnail).toBeVisible();
-          await expect(thumbnail).toHaveAttribute('src', new RegExp(`${id}-${thumb}${suffix}\\.png$`));
-          await expect.poll(() => product.imageDecoded(thumbnail), { message: `Product ${id}, ${color || 'default'} thumbnail ${thumb} decodes` }).toBe(true);
-        }
-        for (let view = 1; view <= 3; view++) {
-          await product.thumbnail(view);
-          const source = new RegExp(`${id}-${view}${suffix}\\.png$`);
-          await expect(product.galleryImage).toBeVisible();
-          await expect(product.galleryImage).toHaveAttribute('src', source);
-          await expect.poll(() => product.imageDecoded(product.galleryImage), { message: `Product ${id}, ${color || 'default'} view ${view} decodes` }).toBe(true);
+          for (const other of ['red', 'purple', 'black'].filter(value => value !== color)) {
+            await expect(product.swatch(other)).not.toBeChecked();
+          }
+          await expect(product.galleryImage).toHaveAttribute('src', `assets/products/${id}-3.jpg`);
+          for (let view = 1; view <= 3; view++) {
+            await expect(product.thumbImage(view)).toHaveAttribute('src', thumbnailSources[view - 1]);
+          }
           await product.openZoom();
-          await expect(product.zoomDialog).toBeVisible();
-          await expect(product.zoomImage).toBeVisible();
-          await expect(product.zoomImage).toHaveAttribute('src', source);
-          await expect.poll(() => product.imageDecoded(product.zoomImage), { message: `Product ${id}, ${color || 'default'} zoom ${view} decodes` }).toBe(true);
+          await expect(product.zoomImage).toHaveAttribute('src', `assets/products/${id}-3.jpg`);
+          await expect.poll(() => product.imageDecoded(product.zoomImage)).toBe(true);
           await product.closeZoom();
-          await expect(product.zoomDialog).not.toBeVisible();
         }
-        await product.nextImage();
-        await expect(product.galleryImage).toHaveAttribute('src', new RegExp(`${id}-1${suffix}\\.png$`));
-        await expect.poll(() => product.imageDecoded(product.galleryImage)).toBe(true);
-        await product.previousImage();
-        await expect(product.galleryImage).toHaveAttribute('src', new RegExp(`${id}-3${suffix}\\.png$`));
-        await expect.poll(() => product.imageDecoded(product.galleryImage)).toBe(true);
       }
+      await product.nextImage();
+      await expect(product.galleryImage).toHaveAttribute('src', `assets/products/${id}-1.jpg`);
+      await expect.poll(() => product.imageDecoded(product.galleryImage)).toBe(true);
+      await product.previousImage();
+      await expect(product.galleryImage).toHaveAttribute('src', `assets/products/${id}-3.jpg`);
+      await expect.poll(() => product.imageDecoded(product.galleryImage)).toBe(true);
       await product.close();
     });
   }
@@ -111,7 +142,9 @@ test('product validation preserves the cart for missing options, unavailable sto
       }
       await expect(product.addButton).toBeEnabled();
       await expect(product.chooseButton).not.toBeVisible();
+      const photoSource = await product.galleryImage.getAttribute('src');
       await product.select(configuration.unavailable);
+      await expect(product.galleryImage).toHaveAttribute('src', photoSource);
       await expect(product.addButton).toBeDisabled();
       await expect(product.stock).toContainText('Variantă indisponibilă');
       await shop.language('en');
@@ -119,6 +152,7 @@ test('product validation preserves the cart for missing options, unavailable sto
       await expect(product.stock).toContainText('Variant unavailable');
       await shop.language('ro');
       await product.select({ color: configuration.attributes.color });
+      await expect(product.galleryImage).toHaveAttribute('src', photoSource);
       await expect(product.addButton).toBeEnabled();
       await product.close();
       await expectSeedCart();

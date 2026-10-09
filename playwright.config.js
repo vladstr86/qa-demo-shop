@@ -1,6 +1,6 @@
 import { defineConfig } from '@playwright/test';
 
-const baseURL = process.env.BASE_URL || 'https://vlad-qa-demo-shop.pages.dev/';
+const baseURL = process.env.BASE_URL || 'http://127.0.0.1:4173/';
 const selectedURL = new URL(baseURL);
 const isLocalSite = ['localhost', '127.0.0.1'].includes(selectedURL.hostname);
 
@@ -9,6 +9,10 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 1 : 0,
+  metadata: {
+    targetURL: `${selectedURL.origin}${selectedURL.pathname}`,
+    targetType: isLocalSite ? 'local' : 'deployed',
+  },
   reporter: [['list'], ['html', { open: 'always' }]],
   use: {
     baseURL,

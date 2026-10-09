@@ -6,7 +6,8 @@ A static bilingual Romanian/English shop for practicing manual QA and Playwright
 
 - Six products; category, search, multiple-brand, and stock filters.
 - Required variant choices, variant pricing, unavailable combinations, and quantity limits.
-- Three gallery views per product, color-specific images, thumbnails, navigation, and zoom.
+- The approved white, graphite, and sage Studio theme, with an Atlas hero and language-aware analytics navigation.
+- Eighteen attributed real photographs: three gallery views per product, thumbnails, navigation, and zoom. Photos remain unchanged when selecting color variants.
 - Cart additions, variant separation and merging, quantity changes, removal, persistence, and reset.
 - Mock login, tab-session authentication, persistent remember me, and logout.
 - Guest and authenticated three-step checkout: address, shipping/payment, review.

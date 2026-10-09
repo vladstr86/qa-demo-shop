@@ -1,0 +1,9 @@
+{
+  "id": "QA-005",
+  "revision": 2,
+  "promptPath": "qa/prompts/QA-005-STUDIO-INTEGRATION-r2.md",
+  "promptSha256": "96fe77ff635a387da4b856bc9764dd2f085fea90096616679f9d11ac4dc96558",
+  "siteSha256": "1783ca1de39e8e943dfb20ecd2c55b88a71fa3ae4c178d110a1a1c51ede00aa7",
+  "status": "pending",
+  "preparedAt": "2026-10-09T20:02:35.383Z"
+}

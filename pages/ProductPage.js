@@ -19,6 +19,11 @@ export class ProductPage {
   swatch(color) { return this.dialog.locator(`[data-testid="swatch-${color}"]`); }
   get galleryImage() { return this.dialog.locator('[data-testid="gallery-image"]'); }
   get galleryMain() { return this.galleryImage; }
+  get title() { return this.dialog.locator('h2'); }
+  get zoomButton() { return this.dialog.locator('[data-testid="gallery-zoom"]'); }
+  get previousButton() { return this.dialog.locator('[data-testid="gallery-prev"]'); }
+  get nextButton() { return this.dialog.locator('[data-testid="gallery-next"]'); }
+  thumbButton(view) { return this.dialog.locator(`[data-testid="gallery-thumb-${view}"]`); }
   thumbImage(view) { return this.dialog.locator(`[data-testid="gallery-thumb-${view}"] img`); }
   get zoomImage() { return this.zoomDialog.locator('img.zoom-image'); }
 
@@ -31,10 +36,10 @@ export class ProductPage {
   async setQuantity(quantity) { await this.quantity.fill(String(quantity)); }
   async add(quantity = 1) { await this.setQuantity(quantity); await this.addButton.click(); }
   async close() { await this.dialog.locator('[data-testid="product-close"]').click(); }
-  async thumbnail(view) { await this.dialog.locator(`[data-testid="gallery-thumb-${view}"]`).click(); }
-  async nextImage() { await this.dialog.locator('[data-testid="gallery-next"]').click(); }
-  async previousImage() { await this.dialog.locator('[data-testid="gallery-prev"]').click(); }
-  async openZoom() { await this.dialog.locator('[data-testid="gallery-zoom"]').click(); }
+  async thumbnail(view) { await this.thumbButton(view).click(); }
+  async nextImage() { await this.nextButton.click(); }
+  async previousImage() { await this.previousButton.click(); }
+  async openZoom() { await this.zoomButton.click(); }
   async closeZoom() { await this.zoomDialog.locator('[data-testid="zoom-close"]').click(); }
   async chooseMissingOption() { await this.selectOptionsButton.click(); }
   async quantityValid() { return this.quantity.evaluate(input => input.validity.valid); }

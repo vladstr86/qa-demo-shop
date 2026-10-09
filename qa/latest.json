@@ -1,9 +1,9 @@
 {
-  "id": "QA-003",
-  "revision": 1,
-  "promptPath": "qa/prompts/QA-003-THEME.md",
-  "promptSha256": "d640454ee804d4adf27b3f16efa275653b7c2047e83aed9d8adab7d92efdb0af",
-  "siteSha256": "357fcfe437bb609dd1da6c49b53df39557f3201ab7f425e0a3100e4984a04b6a",
+  "id": "QA-005",
+  "revision": 2,
+  "promptPath": "qa/prompts/QA-005-STUDIO-INTEGRATION-r2.md",
+  "promptSha256": "96fe77ff635a387da4b856bc9764dd2f085fea90096616679f9d11ac4dc96558",
+  "siteSha256": "1783ca1de39e8e943dfb20ecd2c55b88a71fa3ae4c178d110a1a1c51ede00aa7",
   "status": "pending",
-  "preparedAt": "2026-10-09T16:41:12.013Z"
+  "preparedAt": "2026-10-09T20:02:35.383Z"
 }

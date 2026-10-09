@@ -1,0 +1,9 @@
+{
+  "id": "QA-004",
+  "revision": 1,
+  "promptPath": "qa/prompts/QA-004-ANALYTICS-LINK.md",
+  "promptSha256": "d94bf79302806c38d07d023e52c9d7eff66386e3bbae90762f65961bc0249236",
+  "siteSha256": "71dee38ea516e15458e89604cd67f7005e3f53739682ec21f18707e85adf4805",
+  "status": "pending",
+  "preparedAt": "2026-10-09T16:55:35.614Z"
+}

@@ -2,6 +2,73 @@ import { test, expect } from '../../fixtures/shop.js';
 import { card, customer, euroCents, pricesCents, shippingCents, variants } from '../../test-data/shop-data.js';
 
 test('RO/EN preserves variants, quantities and all checkout data without responsive overflow', async ({ shop, product, checkout }) => {
+  await test.step('manual language selection updates the URL and storage so an older query cannot return on reload', async () => {
+    await shop.language('en');
+    await shop.goto('/?lang=ro&review=studio#catalog');
+    await expect(shop.html).toHaveAttribute('lang', 'ro');
+    for (const language of ['en', 'ro']) {
+      await shop.language(language);
+      expect(await shop.languageState()).toEqual({ query: language, stored: language, marker: 'studio', hash: '#catalog' });
+      await shop.reload();
+      await expect(shop.html).toHaveAttribute('lang', language);
+      expect(await shop.languageState()).toEqual({ query: language, stored: language, marker: 'studio', hash: '#catalog' });
+    }
+  });
+
+  await test.step('native analytics navigation and all photograph credits remain accessible in Romanian and English', async () => {
+    const headers = {
+      ro: ['Produs / fotografie', 'Sursă', 'Fotograf', 'Licență'],
+      en: ['Product / photo', 'Source', 'Photographer', 'License'],
+    };
+    for (const language of ['ro', 'en']) {
+      await shop.language(language);
+      await expect(shop.analyticsLink).toHaveAccessibleName(language === 'ro' ? 'Analiză date' : 'Data Analytics');
+      expect(await shop.navigationLinkState(shop.analyticsLink)).toEqual({
+        tag: 'A', href: `https://vlad-qa-analytics.pages.dev/?lang=${language}`, target: '',
+      });
+      await expect(shop.photoCreditsLink).toHaveAccessibleName(language === 'ro' ? 'Surse fotografii' : 'Photo credits');
+      const creditsLink = await shop.navigationLinkState(shop.photoCreditsLink);
+      expect(creditsLink.tag).toBe('A');
+      expect(creditsLink.target).toBe('');
+      expect(new URL(creditsLink.href).pathname).toBe('/photo-credits.html');
+      expect(new URL(creditsLink.href).search).toBe(`?lang=${language}`);
+      await shop.openPhotoCredits();
+      await expect(shop.html).toHaveAttribute('lang', language);
+      await expect(shop.photoCreditsTitle).toHaveText(language === 'ro' ? 'Sursele fotografiilor reale' : 'Real product photography');
+      await expect(shop.photoCreditsHeaders).toHaveText(headers[language]);
+      for (let column = 0; column < 4; column++) {
+        await expect(shop.photoCreditsHeaders.nth(column)).toHaveAttribute('scope', 'col');
+      }
+      await expect(shop.photoCreditsRows).toHaveCount(18);
+      const credits = await shop.photoCredits();
+      expect(credits.map(credit => credit.photo)).toEqual(
+        Array.from({ length: 6 }, (_, productIndex) => Array.from({ length: 3 }, (_, viewIndex) => `${productIndex + 1} / ${viewIndex + 1}`)).flat(),
+      );
+      expect(new Set(credits.map(credit => credit.source)).size).toBe(18);
+      for (const credit of credits) {
+        expect(credit.source, `Photograph ${credit.photo} has its original source`).toMatch(/^https:\/\/commons\.wikimedia\.org\/wiki\/File:/u);
+        expect(credit.photographer, `Photograph ${credit.photo} retains attribution`).not.toBe('');
+        expect(credit.license, `Photograph ${credit.photo} retains its license`).toMatch(/^(?:CC BY(?:-SA)? (?:2\.0|3\.0|4\.0)|CC0|Public domain)$/u);
+        if (credit.license === 'Public domain') expect(credit.licenseURL).toBeNull();
+        else expect(credit.licenseURL).toMatch(/^https?:\/\/creativecommons\.org\/(?:licenses|publicdomain)\//u);
+      }
+      await expect(shop.photoCreditsLanguage).toHaveAccessibleName(language === 'ro'
+        ? 'Schimbă limba în engleză' : 'Switch language to Romanian');
+      const otherLanguage = language === 'ro' ? 'en' : 'ro';
+      await shop.switchPhotoCreditsLanguage();
+      await expect(shop.html).toHaveAttribute('lang', otherLanguage);
+      await expect(shop.photoCreditsHeaders).toHaveText(headers[otherLanguage]);
+      expect(await shop.languageState()).toMatchObject({ query: otherLanguage, stored: otherLanguage });
+      await expect(shop.photoCreditsBack).toHaveAccessibleName(otherLanguage === 'ro'
+        ? '← Înapoi la magazin' : '← Back to store');
+      await expect(shop.photoCreditsBack).toHaveAttribute('href', `index.html?lang=${otherLanguage}`);
+      await shop.backFromPhotoCredits();
+      await expect(shop.html).toHaveAttribute('lang', otherLanguage);
+      expect(await shop.languageState()).toMatchObject({ query: otherLanguage, stored: otherLanguage });
+    }
+    await shop.language('ro');
+  });
+
   await expect(shop.html).toHaveAttribute('lang', 'ro');
   await expect(shop.card(3)).toContainText('Căști Pulse Pro');
   expect(await shop.fitsViewport(), 'Romanian catalog fits the viewport').toBe(true);

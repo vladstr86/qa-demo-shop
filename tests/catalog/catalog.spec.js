@@ -1,9 +1,30 @@
 import { test, expect } from '../../fixtures/shop.js';
-import { imageDecoded } from '../../pages/image.js';
 import { euroCents, pricesCents } from '../../test-data/shop-data.js';
 
 test('catalog combines filters, shows bilingual EUR prices and loads every product asset', async ({ shop, product }) => {
   const catalogPrices = [pricesCents.atlas, pricesCents.horizon, pricesCents.pulseWired, pricesCents.wave, pricesCents.keyboard, pricesCents.mouse];
+
+  await test.step('the bilingual Studio hero opens Atlas with keyboard input and the fixed EUR price', async () => {
+    for (const language of ['ro', 'en']) {
+      await shop.language(language);
+      await expect(shop.heroButton).toHaveAccessibleName('Laptop Atlas 14');
+      await expect(shop.heroPhoto).toHaveAttribute('alt', language === 'ro'
+        ? 'Fotografie ilustrativă de laptop' : 'Illustrative laptop photograph');
+      await expect(shop.heroPhoto).toHaveAttribute('src', 'assets/products/1-1.jpg');
+      await expect.poll(() => shop.imageDecoded(shop.heroPhoto)).toBe(true);
+      expect(euroCents(await shop.heroPrice.innerText(), language)).toBe(pricesCents.atlas);
+      await expect(shop.heroFallback).not.toBeVisible();
+      await shop.focusHero();
+      await expect(shop.heroButton).toBeFocused();
+      await shop.openHeroWithKeyboard();
+      await expect(product.dialog).toBeVisible();
+      await expect(product.title).toHaveText('Laptop Atlas 14');
+      expect(euroCents(await product.price.innerText(), language)).toBe(pricesCents.atlas);
+      await product.close();
+      expect(await shop.fitsViewport(), `${language} Studio hero fits the viewport`).toBe(true);
+    }
+    await shop.language('ro');
+  });
 
   await test.step('all six cards show the fixed starting prices in Romanian and English', async () => {
     await expect(shop.cards).toHaveCount(6);
@@ -33,21 +54,44 @@ test('catalog combines filters, shows bilingual EUR prices and loads every produ
     }
   });
 
-  await test.step('all 45 local product files have successful PNG responses and signatures', async () => {
+  await test.step('all 18 real photographs have successful JPEG responses and signatures', async () => {
     let checkedFiles = 0;
     for (let id = 1; id <= 6; id++) {
       for (let view = 1; view <= 3; view++) {
-        for (const suffix of ['', ...(id <= 3 ? ['-red', '-purple', '-black'] : [])]) {
-          const filename = `${id}-${view}${suffix}.png`;
-          const response = await shop.asset(id, view, suffix);
-          expect(response.ok(), filename).toBe(true);
-          expect(response.headers()['content-type'], filename).toContain('image/png');
-          expect((await response.body()).subarray(0, 8).toString('hex'), filename).toBe('89504e470d0a1a0a');
-          checkedFiles++;
-        }
+        const filename = `${id}-${view}.jpg`;
+        const response = await shop.asset(id, view);
+        expect(response.ok(), filename).toBe(true);
+        expect(response.headers()['content-type'], filename).toContain('image/jpeg');
+        const bytes = await response.body();
+        expect(bytes.subarray(0, 2).toString('hex'), filename).toBe('ffd8');
+        expect(bytes.subarray(-2).toString('hex'), filename).toBe('ffd9');
+        checkedFiles++;
       }
     }
-    expect(checkedFiles).toBe(45);
+    expect(checkedFiles).toBe(18);
+  });
+
+  await test.step('a failed hero photograph has a useful bilingual fallback and retains the Atlas action', async () => {
+    await shop.simulateHeroImageFailure();
+    try {
+      for (const language of ['ro', 'en']) {
+        await shop.language(language);
+        await expect(shop.heroFallback).toBeVisible();
+        await expect(shop.heroFallback).toHaveText(language === 'ro'
+          ? 'Fotografia nu este disponibilă. Deschide Laptop Atlas 14 pentru detalii.'
+          : 'The photograph is unavailable. Open Laptop Atlas 14 for product details.');
+        await expect(shop.heroButton).toHaveAccessibleName('Laptop Atlas 14');
+        await shop.focusHero();
+        await shop.openHeroWithKeyboard();
+        await expect(product.title).toHaveText('Laptop Atlas 14');
+        await product.close();
+      }
+    } finally {
+      await shop.restoreHeroImage();
+    }
+    await expect.poll(() => shop.imageDecoded(shop.heroPhoto)).toBe(true);
+    await expect(shop.heroFallback).not.toBeVisible();
+    await shop.language('ro');
   });
 
   await test.step('search is case insensitive and combines with category, including empty results', async () => {
