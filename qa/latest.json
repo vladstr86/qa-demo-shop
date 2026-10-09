@@ -1,9 +1,9 @@
 {
-  "id": "QA-002",
+  "id": "QA-003",
   "revision": 1,
-  "promptPath": "qa/prompts/QA-002-PRIVATE-DATA.md",
-  "promptSha256": "8aff88463a589b106b47c4edd7132ab8da3922816cc0ac55c8daa75b9bea26fe",
-  "siteSha256": "031105b13987a8314eb2751ad52779e61dc3e3583bf994ab0dc1d70ae5dda0d0",
+  "promptPath": "qa/prompts/QA-003-THEME.md",
+  "promptSha256": "d640454ee804d4adf27b3f16efa275653b7c2047e83aed9d8adab7d92efdb0af",
+  "siteSha256": "357fcfe437bb609dd1da6c49b53df39557f3201ab7f425e0a3100e4984a04b6a",
   "status": "pending",
-  "preparedAt": "2026-10-09T14:59:00.188Z"
+  "preparedAt": "2026-10-09T16:41:12.013Z"
 }
