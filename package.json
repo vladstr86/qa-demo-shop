@@ -1,0 +1,20 @@
+{
+  "name": "qa-demo-shop",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node scripts/serve.mjs",
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:ui": "playwright test --ui",
+    "report": "playwright show-report",
+    "qa:review": "node scripts/qa-handoff.mjs review",
+    "qa:apply": "node scripts/qa-handoff.mjs apply",
+    "qa:prepare": "node scripts/qa-handoff.mjs prepare",
+    "qa:fingerprint": "node scripts/qa-handoff.mjs fingerprint"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.58.0"
+  }
+}

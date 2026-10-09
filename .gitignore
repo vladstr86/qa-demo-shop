@@ -1,0 +1,25 @@
+node_modules/
+test-results/
+playwright-report/
+blob-report/
+
+# Local environment files; keep a safe example eligible for Git.
+.env
+.env.*
+!.env.example
+.envrc
+.direnv/
+
+# Browser authentication state and local cloud credentials.
+.auth/
+playwright/.auth/
+*storage-state*.json
+*storageState*.json
+auth-state*.json
+authState*.json
+*.auth.json
+/auth.json
+.aws/
+
+# Local editor AI rules.
+.github/instructions/codacy.instructions.md
