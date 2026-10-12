@@ -10,13 +10,18 @@ A static bilingual Romanian/English shop for practicing manual QA and Playwright
 - Eighteen attributed real photographs: three gallery views per product, thumbnails, navigation, and zoom. Photos remain unchanged when selecting color variants.
 - Cart additions, variant separation and merging, quantity changes, removal, persistence, and reset.
 - Mock login, tab-session authentication, persistent remember me, and logout.
+- Separately configured Supabase registration/sign-in, confirmation states, and memory-only real-account sessions.
+- Owner-protected contact profiles with phone and structured shipping/billing addresses; editable checkout prefill.
+- Explicit local guest/mock orders and authenticated stored demo orders with validated confirmations, stable retry IDs, owner history, and aggregate refresh.
 - Guest and authenticated three-step checkout: address, shipping/payment, review.
 - Separate billing, optional newsletter, required terms, and simulated cash/card payments.
 - Fixed EUR prices, exactly two decimals, integer-cent subtotal/shipping/total calculations.
 - Preserved values, variants, quantities, and checkout data when switching RO/EN.
 - Desktop/mobile layouts without horizontal overflow.
 
-There is no backend, real authentication, or payment integration. The mock account is advertised by the demo website. Fictional positive customer and dummy-card defaults are centralized in `test-data/shop.example.json`; `test-data/shop-data.js` loads optional ignored local data or environment overrides. The website loads its own fictional mock account from `dist/demo.example.json`, with an optional ignored `dist/demo.local.json` override.
+The default checkout remains local because the tracked Supabase configuration is empty. The optional real-account mode requires the reviewed additive migration and browser-safe configuration; payments and delivery remain simulated. SQL/configuration steps are prepared in [qa/account-orders-configuration.md](qa/account-orders-configuration.md), with no live application performed.
+
+The separate mock account is advertised by the demo website. Fictional positive customer and dummy-card defaults are centralized in `test-data/shop.example.json`; `test-data/shop-data.js` loads optional ignored local data or environment overrides. The website loads its mock account from `dist/demo.example.json`, with an optional ignored `dist/demo.local.json` override. The optional `dist/account-config.local.json` is also ignored. Routine account tests use fictional Auth/API mocks and an isolated database compatibility harness.
 
 ## Automated acceptance coverage
 

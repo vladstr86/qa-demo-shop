@@ -13,9 +13,17 @@
     "qa:review": "node scripts/qa-handoff.mjs review",
     "qa:apply": "node scripts/qa-handoff.mjs apply",
     "qa:prepare": "node scripts/qa-handoff.mjs prepare",
-    "qa:fingerprint": "node scripts/qa-handoff.mjs fingerprint"
+    "qa:fingerprint": "node scripts/qa-handoff.mjs fingerprint",
+    "build:account-sdk": "node scripts/build-account-sdk.mjs",
+    "test:account-sdk": "node --test scripts/account-client.test.mjs",
+    "test:database": "node scripts/validate-account-database.mjs"
   },
   "devDependencies": {
-    "@playwright/test": "^1.58.0"
+    "@electric-sql/pglite": "0.5.8",
+    "@playwright/test": "^1.58.0",
+    "esbuild": "0.28.2"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "2.117.3"
   }
 }

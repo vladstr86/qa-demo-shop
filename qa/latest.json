@@ -1,9 +1,9 @@
 {
-  "id": "QA-005",
-  "revision": 2,
-  "promptPath": "qa/prompts/QA-005-STUDIO-INTEGRATION-r2.md",
-  "promptSha256": "96fe77ff635a387da4b856bc9764dd2f085fea90096616679f9d11ac4dc96558",
-  "siteSha256": "1783ca1de39e8e943dfb20ecd2c55b88a71fa3ae4c178d110a1a1c51ede00aa7",
+  "id": "QA-006",
+  "revision": 1,
+  "promptPath": "qa/prompts/QA-006-ACCOUNT-ORDERS.md",
+  "promptSha256": "03df6a5859fe73ee226df8a1f96f8e47fcfba33706a522dba7804761f76214e7",
+  "siteSha256": "c2e68202769e2a3bf7e5a9c7f539aa485bb9f606d5437f88c89b7e15aaced2a6",
   "status": "pending",
-  "preparedAt": "2026-10-09T20:02:35.383Z"
+  "preparedAt": "2026-10-12T06:11:13.691Z"
 }

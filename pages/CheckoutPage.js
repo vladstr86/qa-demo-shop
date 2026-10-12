@@ -14,6 +14,8 @@ export class CheckoutPage {
   get orderTotal() { return this.field('order-total'); }
   get orderNumber() { return this.field('order-number'); }
   get review() { return this.dialog.locator('.review'); }
+  get placeButton() { return this.field('place-order'); }
+  get mode() { return this.field('checkout-mode'); }
   shippingInput(type) { return this.field(`shipping-${type}`); }
   shippingLabel(type) { return this.dialog.locator(`label:has([data-testid="shipping-${type}"])`); }
   paymentInput(type) { return this.field(`payment-${type}`); }
@@ -40,5 +42,14 @@ export class CheckoutPage {
   }
   async terms(checked) { await this.field('terms').setChecked(checked); }
   async place(acceptTerms = true) { await this.terms(acceptTerms); await this.field('place-order').click(); }
+  async selectMode(mode) { await this.mode.selectOption(mode); }
+  async repeatSubmission() { await this.placeButton.evaluate(button => button.click()); }
+  async contactPhone(phone) { await this.field('customer-phone').fill(phone); }
+  async structuredAddress(address, type = 'shipping') {
+    for (const [key, value] of Object.entries(address)) {
+      const field = key.replace(/[A-Z]/gu, letter => `-${letter.toLowerCase()}`);
+      await this.field(`${type}-${field}`).fill(value);
+    }
+  }
   async close() { await this.field('checkout-close').click(); }
 }

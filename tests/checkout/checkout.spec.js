@@ -1,5 +1,6 @@
 import { test, expect } from '../../fixtures/shop.js';
 import { card, customer, variants, pricesCents, shippingCents, money, euroCents } from '../../test-data/shop-data.js';
+import { accountContact, realAccounts } from '../../fixtures/account-api.js';
 
 async function expectSubtotal(cart, language, expectedLines, expectedSubtotal) {
   const lines = await cart.readLines(language);
@@ -35,7 +36,7 @@ async function expectCard(checkout) {
   await expect(checkout.field('card-cvv')).toHaveValue(card.cvv);
 }
 
-test('guest checkout preserves fixed data and calculates shipping without accumulation in RO and EN', async ({ shop, product, checkout }) => {
+test('guest checkout preserves fixed data and calculates shipping without accumulation in RO and EN', async ({ shop, product, checkout, accountApi }) => {
   let subtotal;
   const lines = [
     { key: '1-black-16-512', price: pricesCents.atlas, quantity: 2 },
@@ -148,10 +149,12 @@ test('guest checkout preserves fixed data and calculates shipping without accumu
     await expect(shop.cart.checkoutButton).toBeDisabled();
     expect(await shop.cart.calculateSubtotalCents('en')).toBe(0);
     expect(euroCents(await checkout.orderTotal.innerText(), 'en'), 'The saved confirmation total survives an empty cart').toBe(202085);
+    expect(accountApi.writeCalls, 'Guest orders remain local and never call Supabase or the legacy RPC').toEqual([]);
   });
 });
 
-test('checkout rejects one invalid field at a time and preserves cart and totals in RO and EN', async ({ shop, product, checkout }) => {
+test('checkout validates guest fields and saves account orders only after reconciled, idempotent confirmation', async ({ shop, product, checkout, accountPage, accountApi }) => {
+  test.setTimeout(60000);
   const lines = [{ key: '6', price: pricesCents.mouse, quantity: 1 }];
   await shop.language('ro');
   await shop.product(6);
@@ -265,5 +268,117 @@ test('checkout rejects one invalid field at a time and preserves cart and totals
     await expectSubtotal(shop.cart, 'en', [], 0);
     await expect(shop.cart.rows).toHaveCount(0);
     await expect(shop.cart.checkoutButton).toBeDisabled();
+    expect(accountApi.writeCalls, 'The restored guest checkout must not create database records').toEqual([]);
+  });
+
+  await shop.cart.close();
+  accountApi.enabled = true;
+  await shop.reload();
+  await accountPage.realLogin(realAccounts.a.email, realAccounts.a.password);
+  await expect(accountPage.profileForm).toBeVisible();
+  await accountPage.refreshAnalytics('observed');
+  await expect(accountPage.analyticsOrderCount).toHaveText('0');
+  await accountPage.close();
+  await shop.product(6);
+  await product.add();
+  await shop.cart.open();
+  const accountSubtotal = await expectSubtotal(shop.cart, 'en', lines, 3999);
+  const accountCart = await shop.cart.savedLines();
+  await shop.cart.checkout();
+  await checkout.selectMode('account');
+  const override = { ...accountContact.shipping, street: 'Checkout Override Street' };
+
+  await test.step('Owner profile prefills structured contact fields; edits, language and terms remain usable', async () => {
+    await expect(checkout.field('customer-name')).toHaveValue(accountContact.name);
+    await expect(checkout.field('customer-email')).toHaveValue(realAccounts.a.email);
+    await expect(checkout.field('customer-email')).toHaveAttribute('readonly', '');
+    await expect(checkout.field('customer-phone')).toHaveValue('+40700123456');
+    await expect(checkout.field('shipping-street')).toHaveValue(accountContact.shipping.street);
+    await checkout.contactPhone('123');
+    await checkout.next();
+    await expect(checkout.error).not.toHaveText('');
+    await expect(checkout.step).toHaveText('1 / 3');
+    expect(accountApi.orderCalls).toHaveLength(0);
+    await checkout.contactPhone(accountContact.phone);
+    await checkout.structuredAddress(override);
+    await checkout.sameBilling(false);
+    await checkout.structuredAddress(accountContact.billing, 'billing');
+    await checkout.newsletter(true);
+    for (const language of ['ro', 'en']) {
+      await shop.language(language);
+      await expect(checkout.field('shipping-street')).toHaveValue(override.street);
+      await expect(checkout.field('billing-street')).toHaveValue(accountContact.billing.street);
+      await expect(checkout.field('customer-phone')).toHaveValue(accountContact.phone);
+      await expect(checkout.field('newsletter')).toBeChecked();
+      expect(await shop.fitsViewport(), `${language} account checkout fits the viewport`).toBe(true);
+    }
+    await checkout.next();
+    await checkout.shipping('express');
+    await checkout.payment('card');
+    await checkout.card({ number: '4111111111111111', expiry: '12/39', cvv: '123' });
+    await checkout.next();
+    await expect(checkout.step).toHaveText('3 / 3');
+    expect(euroCents(await checkout.total.innerText(), 'en')).toBe(accountSubtotal + shippingCents.express);
+    await checkout.place(false);
+    await expect(checkout.error).toHaveText(errors.terms.en);
+    expect(accountApi.orderCalls).toHaveLength(0);
+    expect(await shop.cart.savedLines()).toEqual(accountCart);
+  });
+
+  await test.step('Lost responses and mismatched totals preserve cart/details and reuse the exact request', async () => {
+    accountApi.orderOutcomes.push('commit-then-network', 'mismatch', 'hold');
+    await checkout.place();
+    await expect(checkout.error).not.toHaveText('');
+    expect(accountApi.orderCalls).toHaveLength(1);
+    await expect(checkout.confirmation).toHaveCount(0);
+    expect(await shop.cart.savedLines()).toEqual(accountCart);
+    const request = accountApi.orderCalls[0].body;
+    expect(request.p_request_id).toMatch(/^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/u);
+    expect(request.p_items).toEqual([{ variant_key: '6', quantity: 1 }]);
+    expect(request.p_contact).toEqual({ name: accountContact.name, phone: '+40700123456', shipping_address: JSON.stringify(override), billing_address: JSON.stringify(accountContact.billing) });
+    expect(Object.keys(request).sort()).toEqual(['p_contact', 'p_items', 'p_request_id', 'p_shipping']);
+    expect(JSON.stringify(request)).not.toMatch(/card|expiry|cvv|4111111111111111|owner_id|user_id|email/u);
+    await checkout.place();
+    await expect(checkout.error).not.toHaveText('');
+    expect(accountApi.orderCalls).toHaveLength(2);
+    expect(accountApi.orderCalls[1].body).toEqual(request);
+    await expect(checkout.confirmation).toHaveCount(0);
+    expect(await shop.cart.savedLines()).toEqual(accountCart);
+    await expect(checkout.review).toContainText(override.street);
+    await checkout.place();
+    await expect.poll(() => accountApi.orderCalls.length).toBe(3);
+    await expect(checkout.placeButton).toBeDisabled();
+    await checkout.repeatSubmission();
+    expect(accountApi.orderCalls).toHaveLength(3);
+    expect(accountApi.orderCalls[2].body).toEqual(request);
+    accountApi.releaseOrder();
+    await expect(checkout.confirmation).toBeVisible();
+    await expect(checkout.orderNumber).toHaveText(request.p_request_id);
+    expect(euroCents(await checkout.orderTotal.innerText(), 'en')).toBe(4649);
+    expect(await shop.cart.savedLines()).toEqual([]);
+    expect(accountApi.orderRecords.size).toBe(1);
+    expect(JSON.parse(accountApi.addresses.get(realAccounts.a.id).shipping_address)).toEqual(accountContact.shipping);
+    await checkout.close();
+  });
+
+  await test.step('Stored orders retain immutable snapshots and refresh aggregate-only analytics with seed filters', async () => {
+    await accountPage.open();
+    await expect(accountPage.orderRows).toHaveCount(1);
+    for (const source of ['observed', 'all', 'seed']) {
+      await accountPage.refreshAnalytics(source);
+      await expect(accountPage.analyticsOrderCount).toHaveText(source === 'observed' ? '1' : source === 'all' ? '3' : '2');
+      expect(euroCents(await accountPage.analyticsTotal.innerText(), 'en')).toBe(source === 'observed' ? 4649 : source === 'all' ? 14649 : 10000);
+      const output = await accountPage.analyticsOutput.innerText();
+      for (const value of [realAccounts.a.email, accountContact.name, accountContact.phone, override.street]) expect(output).not.toContain(value);
+      expect(accountApi.analyticsCalls.at(-1).body.p_source).toBe(source);
+    }
+    const requestId = accountApi.orderCalls[0].body.p_request_id;
+    const snapshot = structuredClone(accountApi.orderRecords.get(requestId).history.contact_snapshot);
+    await accountPage.profile({ ...accountContact, shipping: { ...accountContact.shipping, street: 'Later Saved Street' } });
+    await accountPage.saveProfile();
+    await expect(accountPage.profileStatus).not.toHaveText('');
+    expect(accountApi.orderRecords.get(requestId).history.contact_snapshot).toEqual(snapshot);
+    await accountPage.realLogout();
+    await expect(accountPage.orderRows).toHaveCount(0);
   });
 });

@@ -20,7 +20,8 @@ export async function siteFingerprint(root) {
       }
       if (stat.isDirectory()) {
         await visit(full);
-      } else if (stat.isFile() && !entry.name.endsWith('.zip') && entry.name !== 'demo.local.json') {
+      } else if (stat.isFile() && !entry.name.endsWith('.zip') &&
+          !['demo.local.json', 'account-config.local.json'].includes(entry.name)) {
         files.push(full);
       } else if (!stat.isFile()) {
         throw new Error('Unsupported dist entry: ' + full);

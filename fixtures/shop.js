@@ -4,8 +4,15 @@ import { ProductPage } from '../pages/ProductPage.js';
 import { AccountPage } from '../pages/AccountPage.js';
 import { CheckoutPage } from '../pages/CheckoutPage.js';
 import { account as configuredAccount } from '../test-data/shop-data.js';
+import { AccountApi } from './account-api.js';
 export const test = base.extend({
-  shop: async ({ page }, use) => {
+  accountApi: [async ({ context }, use) => {
+    const api = new AccountApi(context);
+    await api.install();
+    await use(api);
+    expect(api.blocked, 'Routine browser tests must not contact a live or unexpected account endpoint').toEqual([]);
+  }, { auto: true }],
+  shop: async ({ page, accountApi }, use) => {
     const shop = new ShopPage(page);
     await shop.goto();
     await shop.clearStorage();

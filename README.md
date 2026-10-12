@@ -1,6 +1,20 @@
 # QA Demo Shop
 
-A static demo shop for manual QA and Playwright automation in JavaScript. Orders, login, and payments are simulated; there is no backend or real payment integration. The website supports Romanian and English. Project communication, instructions, documentation, code, and test names use English.
+A bilingual Studio demo shop for manual QA and Playwright automation in JavaScript. The explicit guest/mock mode remains local. A separately configured Supabase account mode supports registration, contact profiles, and stored demo orders; payments and delivery are always simulated. Project communication, instructions, documentation, code, and test names use English.
+
+## Account integration and review
+
+The supplied account/order references are integrated without changing the approved Studio photographs or replacing the existing mock fixture mechanism. Real account actions require a reviewed Supabase configuration and additive migration; the tracked configuration has empty placeholders, so a fresh clone remains runnable in mock mode.
+
+Read [qa/account-orders-configuration.md](qa/account-orders-configuration.md) before enabling the account mode. It separates the migration review, missing database baseline, email-confirmation and redirect settings, and ignored local configuration from local verification. No live migration or Auth configuration is applied by installing dependencies, building the SDK, or running the test suite.
+
+The official Supabase SDK is pinned and bundled locally. Rebuild it after an intentional dependency update:
+
+```bash
+npm run build:account-sdk
+```
+
+Browser tests intercept configuration and Auth/database requests with fictional data. Local database validation uses an isolated compatibility harness and does not connect to Supabase. Existing personal fixtures remain ignored.
 
 ## Install and test local changes
 

@@ -14,6 +14,7 @@ blob-report/
 /test-data/shop.js
 /test-data/shop.local.json
 /dist/demo.local.json
+/dist/account-config.local.json
 /qa/prompts/QA-001-EUR.md
 
 # Browser authentication state and local cloud credentials.

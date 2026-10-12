@@ -1,0 +1,17 @@
+/* Account panels reuse the approved Studio colors and existing dialog geometry. */
+.account-modes{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0 20px;padding-right:5px}
+.account-modes button{flex:1;min-width:0;white-space:normal}
+.account-modes [aria-pressed=true]{background:var(--ink);border-color:var(--ink);color:#fff}
+.account-notice{color:var(--muted);font-size:13px;line-height:1.5;overflow-wrap:anywhere}
+.address-fields{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}
+.address-fields label:first-child{grid-column:1/-1}
+.address-fields label{min-width:0}
+.account-analytics{margin-top:24px;border-top:1px solid var(--line);padding-top:15px}
+.account-analytics p,.account-order p{font-size:13px}
+.account-order{border:1px solid var(--line);border-radius:8px;padding:12px;margin:12px 0;overflow-wrap:anywhere}
+.account-order b{font-size:12px}
+[data-testid="profile-email"],[data-testid="customer-email"][readonly]{background:var(--blue-soft);color:var(--muted)}
+[data-testid="analytics-output"]{font-size:14px;line-height:1.6;margin-top:14px}
+[data-testid="checkout-mode"]{margin-bottom:15px}
+[data-testid="account-owner-email"],.review{overflow-wrap:anywhere}
+@media(max-width:360px){.address-fields{grid-template-columns:1fr}.address-fields label:first-child{grid-column:auto}.account-modes{flex-direction:column}}

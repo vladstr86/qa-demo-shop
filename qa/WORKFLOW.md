@@ -7,7 +7,7 @@ The coordinator reviews a website change and drafts instructions for updating th
 1. Complete the authorized website change.
 2. Ask `qa_coordinator` for read-only analysis of the differences and a prompt.
 3. Save the prompt in `qa/prompts/` with a unique ID/revision and run `npm run qa:prepare -- <prompt> <id> <revision>`.
-4. `qa/latest.json` binds the prompt to public `dist/` content with SHA-256. ZIP files are excluded to prevent recursive generation; the ignored `demo.local.json` override is excluded so private credentials do not affect the public source fingerprint. Preparation does not dispatch or apply tests.
+4. `qa/latest.json` binds the prompt to public `dist/` content with SHA-256. ZIP files are excluded to prevent recursive generation; ignored `demo.local.json` and `account-config.local.json` overrides are excluded so local credentials/configuration do not affect the public source fingerprint. Tracked example configurations remain included. Preparation does not dispatch or apply tests.
 5. The user reviews the prompt with `npm run qa:review` and approves its exact ID/revision.
 6. After approval, implement within the reviewed scope, run available checks, and report actual results. The user reviews the result.
 
