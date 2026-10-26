@@ -46,6 +46,8 @@ The live website is [https://vlad-qa-demo-shop.pages.dev/](https://vlad-qa-demo-
 
 ## GitHub Actions
 
+DevOps preparation and its current limitations are documented in [docs/agents/devops.md](docs/agents/devops.md). Start with `npm run devops:preflight` for a local read-only check. The separate manual **DevOps local preflight** workflow runs this check without secrets, deployment, or live database access. Preview and production workflow preparation awaits the missing DevOps reference guides; the existing Playwright workflow below is preserved.
+
 The workflow in `.github/workflows/playwright.yml` runs on push, pull request, and manual dispatch. It uses Ubuntu, Node.js 24, `npm ci`, and Chromium with system dependencies, then runs the existing desktop and mobile projects. Test failures keep the job failed. Available HTML reports and test results are uploaded even after failure and retained for 14 days.
 
 The optional repository variable `BASE_URL` overrides the workflow target. In GitHub, open **Settings → Secrets and variables → Actions → Variables → New repository variable**, enter `BASE_URL`, and set its value to an alternative website URL. Leave it unset or empty to use `https://vlad-qa-demo-shop.pages.dev/`: the workflow sets this public fallback explicitly, preserving its existing behavior despite the local development default. The configuration starts the local server only for `localhost` or `127.0.0.1`; deployed URLs do not start it. The selected deployed website must include Studio for the current Studio tests to pass.

@@ -1,0 +1,11 @@
+# Project defaults for new local Codex sessions. Client/managed overrides still apply.
+sandbox_mode = "workspace-write"
+approval_policy = "on-request"
+
+[sandbox_workspace_write]
+network_access = false
+
+[agents]
+enabled = true
+# The primary Orchestrator is excluded from this limit.
+max_concurrent_threads_per_session = 3

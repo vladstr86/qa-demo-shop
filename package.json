@@ -10,6 +10,7 @@
     "test:headed": "playwright test --headed",
     "test:ui": "playwright test --ui",
     "report": "playwright show-report",
+    "devops:preflight": "node scripts/devops-preflight.mjs",
     "qa:review": "node scripts/qa-handoff.mjs review",
     "qa:apply": "node scripts/qa-handoff.mjs apply",
     "qa:prepare": "node scripts/qa-handoff.mjs prepare",
